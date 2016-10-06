@@ -151,8 +151,6 @@ void CRF::classify(const FunctionCallbackInfo<Value>& args){
     v8::Local<v8::External> handle = v8::Local<v8::External>::New(isolate, tagger);
     CRFPP::Tagger *a = (CRFPP::Tagger *) handle->Value();
     
-    fprintf(stderr, "address of tagger is %p\n",a);
-    
     if (a==NULL) {
         fprintf(stderr,"No tagger. Exiting...\n");
         return;
