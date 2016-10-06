@@ -63,4 +63,17 @@ CRF.prototype.classify = function(text) {
 
 };
 
+/**
+ * Given a template and a trained model in CRF format,
+ * the method trains the model and outputs it to a file.
+ * @param crf_template_path The CRF template path.
+ * @param crf_model_path The CRF training file path.
+ * @param output_path The final output path.
+ * @return 0 on success.
+ */
+CRF.learn = function(crf_template_path, crf_model_path, output_path) {
+	var result = _nodecrf.learn(crf_template_path,crf_model_path,output_path);
+	return result;
+};
+
 module.exports.CRF = CRF;

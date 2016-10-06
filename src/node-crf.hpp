@@ -13,7 +13,8 @@ public:
 
     //actual logic
     static void classify(const v8::FunctionCallbackInfo<v8::Value>& args);
-
+    static void learn(const v8::FunctionCallbackInfo<v8::Value>& args);
+    
 protected:
     CRF();
 

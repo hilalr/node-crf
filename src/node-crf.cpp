@@ -28,6 +28,8 @@ Persistent<Function> CRF::constructor;
 void CRF::Init(Local<Object> exports) {
     Isolate* isolate = Isolate::GetCurrent();
     
+    NODE_SET_METHOD(exports, "learn", learn);
+    
     // Prepare constructor template
     Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
     tpl->SetClassName(String::NewFromUtf8(isolate, "CRF"));
@@ -89,6 +91,56 @@ void CRF::New(const FunctionCallbackInfo<Value>& args) {
     }
 }
 
+//Utility
+static char * getUTF8String(Local<Value> value, const char *fallback = "") {
+    if (value->IsString()) {
+        v8::String::Utf8Value string(value->ToString());
+        char *str = (char *) malloc(string.length() + 1);
+        std::strcpy(str, *string);
+        return str;
+    }
+    char *str = (char *) malloc(std::strlen(fallback) + 1);
+    std::strcpy(str, fallback);
+    return str;
+}
+
+void CRF::learn(const FunctionCallbackInfo<Value>& args){
+    Isolate*        isolate         = NULL; 
+    Local<Value>    final_result;
+    int             result          = 0;
+    char *          template_path   = NULL;
+    char *          model_path      = NULL;
+    char *          output_path     = NULL;
+    
+    
+    isolate = args.GetIsolate();
+    
+    // Get template
+    template_path = getUTF8String(args[0]);
+    
+    // Get training model path
+    model_path = getUTF8String(args[1]);
+    
+    // Get output path
+    output_path = getUTF8String(args[2]);
+    
+    // Prepare arguments
+    char *argv[4];
+    argv[0] = "crf_learn";
+    argv[1] = template_path;
+    argv[2] = model_path;
+    argv[3] = output_path;
+    
+    // Learn
+    result = crfpp_learn(4,argv);
+    
+    // Set result in v8 object
+    final_result = v8::Integer::New(isolate, result);
+    
+    // Return
+    args.GetReturnValue().Set(final_result);
+}
+
 
 void CRF::classify(const FunctionCallbackInfo<Value>& args){
     Isolate* isolate = args.GetIsolate();
@@ -98,6 +150,8 @@ void CRF::classify(const FunctionCallbackInfo<Value>& args){
     v8::Persistent<v8::External, v8::CopyablePersistentTraits<v8::External> > tagger = obj->tagger;
     v8::Local<v8::External> handle = v8::Local<v8::External>::New(isolate, tagger);
     CRFPP::Tagger *a = (CRFPP::Tagger *) handle->Value();
+    
+    fprintf(stderr, "address of tagger is %p\n",a);
     
     if (a==NULL) {
         fprintf(stderr,"No tagger. Exiting...\n");
